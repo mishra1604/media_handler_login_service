@@ -3,26 +3,27 @@ package com.social.media.handler.service;
 import com.social.media.handler.config.ApplicationConfig;
 import com.social.media.handler.config.SecurityConfig;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.boot.jackson.autoconfigure.JacksonProperties;
+import org.jspecify.annotations.Nullable;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import org.springframework.web.util.UriBuilder;
+
+import java.util.Map;
 
 @Service
 @Slf4j
 public class InstagramService {
 
     private final SecurityConfig securityConfig;
-    RestClient restClient;
+    private final RestClient restClient;
 
-    public InstagramService(SecurityConfig securityConfig, ApplicationConfig applicationConfig) {
+    public InstagramService(SecurityConfig securityConfig, ApplicationConfig applicationConfig, @Qualifier("facebookGraphApiRestClient") RestClient restClient) {
         this.securityConfig = securityConfig;
-        this.restClient = RestClient.create(applicationConfig.FACEBOOK_GRAPH_API_URL);
+        this.restClient = restClient;
     }
 
-    public String getInstagramProfileInfo() {
-        String accessToken = securityConfig.getOAuthAccessToken();
-
+    public @Nullable Map getInstagramProfileInfo(String accessToken) {
+        log.info("Fetching Instagram profile info for user");
         return restClient.get()
                 .uri(uriBuilder -> uriBuilder
                         .path("/me/accounts")
@@ -30,7 +31,7 @@ public class InstagramService {
                         .queryParam("fields", "id,name,instagram_business_account")
                         .build())
                 .retrieve()
-                .body(String.class);
+                .body(Map.class);
     }
 
     public Object getInstagramBusinessAccountInfo(String instagramBusinessAccountId) {
