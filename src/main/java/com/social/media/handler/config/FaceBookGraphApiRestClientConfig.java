@@ -19,10 +19,6 @@ import java.util.List;
 @Configuration
 @Slf4j
 public class FaceBookGraphApiRestClientConfig {
-//    @Bean
-//    public RestClient restClient() {
-//        return RestClient.builder().build();
-//    }
 
     @Bean
     public RestClient facebookGraphApiRestClient(RestClient.Builder builder, ApplicationConfig applicationConfig) {

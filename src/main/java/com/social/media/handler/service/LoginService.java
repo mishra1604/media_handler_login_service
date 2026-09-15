@@ -3,12 +3,18 @@ package com.social.media.handler.service;
 import com.social.media.handler.config.ApplicationConfig;
 import com.social.media.handler.config.SecurityConfig;
 import com.social.media.handler.exception.AccessTokenRetrievalFailureException;
+import com.social.media.handler.model.LoginCredentialEntity;
 import com.social.media.handler.model.LongLivedUserAccessTokenModel;
+import com.social.media.handler.repository.LoginCredentialRepository;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClient;
-import com.fasterxml.jackson.databind.JsonNode;
+
+import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 @Service
 @Slf4j
@@ -17,13 +23,16 @@ public class LoginService {
     private final SecurityConfig securityConfig;
     private final RestClient faceBookGraphApiRestClient;
     private final ApplicationConfig appConfig;
+    private final LoginCredentialRepository loginCredentialRepository;
 
     public LoginService(SecurityConfig securityConfig,
-                         @Qualifier("facebookGraphApiRestClient") RestClient faceBookGraphApiRestClient,
-                         ApplicationConfig appConfig) {
+                         @Qualifier("facebookGraphApiRestClient")  RestClient faceBookGraphApiRestClient,
+                         ApplicationConfig appConfig,
+                         LoginCredentialRepository loginCredentialRepository) {
         this.securityConfig = securityConfig;
         this.appConfig = appConfig;
         this.faceBookGraphApiRestClient = faceBookGraphApiRestClient;
+        this.loginCredentialRepository = loginCredentialRepository;
     }
 
     public LongLivedUserAccessTokenModel retrieveLongAccessToken(String shortLivedAccessToken) {
@@ -49,4 +58,23 @@ public class LoginService {
         return response;
     }
 
+    public LoginCredentialEntity saveProfileAndCredentials(Map instagramProfileInfo, String accessToken) {
+        ArrayList<HashMap<String, Object>> profileData = (ArrayList<HashMap<String, Object>>) instagramProfileInfo.get("data");
+        Map<String, Object> instaProfileMap = profileData.get(0);
+        Map<String, Object> instaBusinessAccountDetailMap = (Map<String, Object>) instaProfileMap.get("instagram_business_account");
+        String instagramBusinessAccountId = (String) instaBusinessAccountDetailMap.get("id");
+        String facebookAccountId          = (String) instaProfileMap.get("id");
+
+        LoginCredentialEntity credentialEntity = new LoginCredentialEntity().builder()
+                .instagramId(instagramBusinessAccountId)
+                .facebookId(facebookAccountId)
+                .accessToken(accessToken)
+                .createdAt(LocalDate.now())
+                .updatedAt(LocalDate.now())
+                .build();
+
+        log.info("Credential Entity: {}", credentialEntity.toString());
+        loginCredentialRepository.save(credentialEntity);
+        return credentialEntity;
+    }
 }

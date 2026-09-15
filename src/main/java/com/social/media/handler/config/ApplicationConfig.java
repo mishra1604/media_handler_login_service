@@ -3,7 +3,6 @@ package com.social.media.handler.config;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.PropertySource;
 import org.springframework.beans.factory.annotation.Value;
 
 @Configuration

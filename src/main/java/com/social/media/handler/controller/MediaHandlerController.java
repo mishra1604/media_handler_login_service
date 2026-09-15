@@ -1,6 +1,7 @@
 package com.social.media.handler.controller;
 
 import com.social.media.handler.config.ApplicationConfig;
+import com.social.media.handler.model.LoginCredentialEntity;
 import com.social.media.handler.model.LongLivedUserAccessTokenModel;
 import com.social.media.handler.service.InstagramService;
 import com.social.media.handler.service.LoginService;
@@ -44,14 +45,11 @@ public class MediaHandlerController {
 
         // 1: Retrieve the short-lived access token from the authorized client
         String shortLivedAccessToken = authorizedClient.getAccessToken().getTokenValue();
-        String shortLivedAccessTokenExpiry = authorizedClient.getAccessToken().getExpiresAt().toString();
         log.info("Short-lived access token: {}", shortLivedAccessToken);
 
-        // 2: Exchange the short-lived access token for a long-lived user access token
-        LongLivedUserAccessTokenModel longLivedTokenResponse = loginService.retrieveLongAccessToken(shortLivedAccessToken);
-
-        // get instagram profile info using the long-lived access token
-        @Nullable Map response = instagramService.getInstagramProfileInfo(longLivedTokenResponse.getAccessToken());
-        return ResponseEntity.ok().body(response);
+        // fetch instagram profile info and save Instagram profile info with access token to database
+        Map<String, Object> instagramProfileInfo = instagramService.getInstagramProfileInfo(shortLivedAccessToken);
+        loginService.saveProfileAndCredentials(instagramProfileInfo, shortLivedAccessToken);
+        return ResponseEntity.ok().body(instagramProfileInfo);
     }
 }
