@@ -1,0 +1,14 @@
+inputSet:
+  name: Build_mishra1604_media_handler_login_service_1790240972956-push-trigger-input-set
+  identifier: Build_mishra1604_media_handler_login_service_1790240972956pushtriggerinputset
+  orgIdentifier: default
+  projectIdentifier: default_project
+  pipeline:
+    identifier: Build_mishra1604_media_handler_login_service_1790240972956
+    properties:
+      ci:
+        codebase:
+          build:
+            type: branch
+            spec:
+              branch: <+trigger.branch>
